@@ -1,0 +1,203 @@
+[root@localhost dfs]# ll
+total 8
+drwxr-xr-x 2 root root  101 Apr  6 22:18 debug
+-rw-r--r-- 1 root root 2380 Apr  6 22:18 dfs.sh
+drwxr-xr-x 3 root root   58 Apr  6 22:18 es
+-rw-r--r-- 1 root root  252 Apr  6 22:18 readme.txt
+drwxr-xr-x 6 root root   78 Apr  6 22:18 src
+[root@localhost dfs]# sh dfs.sh 
+start elasticsearch...
+Loaded image: elasticsearch:latest
+es
+es
+58fee9ab1e38708dccb2046c8a64bc74484d7719db6c4f8d1337768ce5dea042
+CONTAINER ID        IMAGE               COMMAND                  CREATED                  STATUS                  PORTS               NAMES
+58fee9ab1e38        elasticsearch       "/elastic-entrypoint¡­"   Less than a second ago   Up Less than a second                       es
+start dfs...
+go: creating new go.mod: module dfs
+listen:[ :80 ] backends:[ http://localhost:2020,http://127.0.0.1:2021 ]
+AddBackend: http://localhost:2020 1
+Server: http://127.0.0.1:2021  Path: ./http_127.0.0.1_2021
+Server: http://localhost:2020  Path: ./http_localhost_2020
+{"error":{"root_cause":[{"type":"index_not_found_exception","reason":"no such index","resource.type":"index_or_alias","resource.id":"backends","index_uuid":"_na_","index":"backends"}],"type":"index_not_found_exception","reason":"no such index","resource.type":"index_or_alias","resource.id":"backends","index_uuid":"_na_","index":"backends"},"status":404}{"_index":"backends","_type":"_doc","_id":"http_localhost:2020","_version":2,"result":"updated","_shards":{"total":2,"successful":1,"failed":0},"_seq_no":1,"_primary_term":1}AddBackend: http://127.0.0.1:2021 1
+{"_index":"backends","_type":"_doc","_id":"http_127.0.0.1:2021","_version":1,"result":"created","_shards":{"total":2,"successful":1,"failed":0},"_seq_no":2,"_primary_term":1}{"error":{"root_cause":[{"type":"index_not_found_exception","reason":"no such index","resource.type":"index_or_alias","resource.id":"objects","index_uuid":"_na_","index":"objects"}],"type":"index_not_found_exception","reason":"no such index","resource.type":"index_or_alias","resource.id":"objects","index_uuid":"_na_","index":"objects"},"status":404}* About to connect() to localhost port 80 (#0)
+*   Trying ::1...
+* Connected to localhost (::1) port 80 (#0)
+> PUT /objects/test1 HTTP/1.1
+> User-Agent: curl/7.29.0
+> Host: localhost
+> Accept: */*
+> Digest: sha-256=35bfdc4784a46633f931e31644383d85ba88b43d25113cc262220bb727d89be1
+> Content-Length: 14
+> Content-Type: application/x-www-form-urlencoded
+> 
+* upload completely sent off: 14 out of 14 bytes
+backend: http localhost:2020
+fullname: ./http_localhost_2020/objects/test1
+< HTTP/1.1 200 OK
+< Date: Mon, 06 Apr 2020 14:19:41 GMT
+< Content-Length: 0
+< 
+* Connection #0 to host localhost left intact
+* About to connect() to localhost port 80 (#0)
+*   Trying ::1...
+* Connected to localhost (::1) port 80 (#0)
+> GET /objects/test1 HTTP/1.1
+> User-Agent: curl/7.29.0
+> Host: localhost
+> Accept: */*
+> 
+backend: http localhost:2020
+ObjectGet: ./http_localhost_2020/objects/test1
+< HTTP/1.1 200 OK
+< Date: Mon, 06 Apr 2020 14:19:42 GMT
+< Content-Length: 14
+< Content-Type: text/plain; charset=utf-8
+< 
+* Connection #0 to host localhost left intact
+/objects/test1* About to connect() to localhost port 80 (#0)
+*   Trying ::1...
+* Connected to localhost (::1) port 80 (#0)
+> PUT /objects/test2 HTTP/1.1
+> User-Agent: curl/7.29.0
+> Host: localhost
+> Accept: */*
+> Digest: sha-256=35bfdc4784a46633f931e31644383d85ba88b43d25113cc262220bb727d89be1
+> Content-Length: 14
+> Content-Type: application/x-www-form-urlencoded
+> 
+* upload completely sent off: 14 out of 14 bytes
+backend: http 127.0.0.1:2021
+fullname: ./http_127.0.0.1_2021/objects/test2
+< HTTP/1.1 200 OK
+< Date: Mon, 06 Apr 2020 14:19:42 GMT
+< Content-Length: 0
+< 
+* Connection #0 to host localhost left intact
+* About to connect() to localhost port 80 (#0)
+*   Trying ::1...
+* Connected to localhost (::1) port 80 (#0)
+> GET /objects/test2 HTTP/1.1
+> User-Agent: curl/7.29.0
+> Host: localhost
+> Accept: */*
+> 
+backend: http 127.0.0.1:2021
+ObjectGet: ./http_127.0.0.1_2021/objects/test2
+< HTTP/1.1 200 OK
+< Date: Mon, 06 Apr 2020 14:19:43 GMT
+< Content-Length: 14
+< Content-Type: text/plain; charset=utf-8
+< 
+* Connection #0 to host localhost left intact
+/objects/test1[root@localhost dfs]# 
+[root@localhost dfs]# 
+[root@localhost dfs]# netstat -antup|grep dfs
+tcp        0      0 127.0.0.1:2020          0.0.0.0:*               LISTEN      18908/./dfs         
+tcp        0      0 127.0.0.1:2021          0.0.0.0:*               LISTEN      18908/./dfs         
+tcp6       0      0 :::80                   :::*                    LISTEN      18908/./dfs         
+[root@localhost dfs]# ls
+debug  dfs.sh  es  readme.txt  src
+[root@localhost dfs]# ls src
+db  dfs  go.mod  http_127.0.0.1_2021  http_localhost_2020  loadbalancer  main.go  proxy  server
+[root@localhost dfs]# ll src/http_127.0.0.1_2021/objects/
+total 4
+-rw-r--r-- 1 root root 14 Apr  6 22:19 test2
+[root@localhost dfs]# ll src/http_localhost_2020/objects/
+total 4
+-rw-r--r-- 1 root root 14 Apr  6 22:19 test1
+[root@localhost dfs]# 
+[root@localhost dfs]# 
+[root@localhost dfs]# curl http://localhost:9200/backends/_search?pretty
+{
+  "took" : 5,
+  "timed_out" : false,
+  "_shards" : {
+    "total" : 5,
+    "successful" : 5,
+    "skipped" : 0,
+    "failed" : 0
+  },
+  "hits" : {
+    "total" : 2,
+    "max_score" : 1.0,
+    "hits" : [
+      {
+        "_index" : "backends",
+        "_type" : "_doc",
+        "_id" : "http_localhost:2020",
+        "_score" : 1.0,
+        "_source" : {
+          "@timestamp" : "2020-04-06T14:23:38.881Z",
+          "backend" : "http://localhost:2020",
+          "alive" : 1,
+          "policy" : 0,
+          "magic" : 14,
+          "size" : 14,
+          "proxy" : 1,
+          "weight" : 1
+        }
+      },
+      {
+        "_index" : "backends",
+        "_type" : "_doc",
+        "_id" : "http_127.0.0.1:2021",
+        "_score" : 1.0,
+        "_source" : {
+          "@timestamp" : "2020-04-06T14:23:38.892Z",
+          "backend" : "http://127.0.0.1:2021",
+          "alive" : 1,
+          "policy" : 0,
+          "magic" : 14,
+          "size" : 14,
+          "proxy" : 1,
+          "weight" : 1
+        }
+      }
+    ]
+  }
+}
+[root@localhost dfs]# curl http://localhost:9200/objects/_search?pretty
+{
+  "took" : 1,
+  "timed_out" : false,
+  "_shards" : {
+    "total" : 5,
+    "successful" : 5,
+    "skipped" : 0,
+    "failed" : 0
+  },
+  "hits" : {
+    "total" : 2,
+    "max_score" : 1.0,
+    "hits" : [
+      {
+        "_index" : "objects",
+        "_type" : "_doc",
+        "_id" : "w3DcT3EBW_rUo6_UeW-Y",
+        "_score" : 1.0,
+        "_source" : {
+          "@timestamp" : "2020-04-06T14:19:41.127Z",
+          "name" : "/objects/test1",
+          "backend" : "http://localhost:2020",
+          "size" : 14,
+          "hash" : "35bfdc4784a46633f931e31644383d85ba88b43d25113cc262220bb727d89be1"
+        }
+      },
+      {
+        "_index" : "objects",
+        "_type" : "_doc",
+        "_id" : "xHDcT3EBW_rUo6_Uf28J",
+        "_score" : 1.0,
+        "_source" : {
+          "@timestamp" : "2020-04-06T14:19:42.727Z",
+          "name" : "/objects/test2",
+          "backend" : "http://127.0.0.1:2021",
+          "size" : 14,
+          "hash" : "35bfdc4784a46633f931e31644383d85ba88b43d25113cc262220bb727d89be1"
+        }
+      }
+    ]
+  }
+}
+[root@localhost dfs]# 

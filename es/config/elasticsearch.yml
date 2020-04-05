@@ -1,0 +1,26 @@
+network.host: 0.0.0.0
+discovery.zen.minimum_master_nodes: 1
+#bootstrap.memory_lock: true
+
+node.master: true
+node.ingest: true
+node.data: true
+
+cluster.routing.allocation.disk.threshold_enabled: true
+cluster.routing.allocation.disk.watermark.low: 91%
+cluster.routing.allocation.disk.watermark.high: 93%
+cluster.routing.allocation.disk.watermark.flood_stage: 95%
+cluster.info.update.interval: 30s
+
+http.cors.enabled: true
+http.cors.allow-origin: "*"
+
+# http basic auth
+#xpack.security.enabled: true
+#xpack.security.transport.ssl.enabled: true
+
+# elasticsearch-6.8.6 https
+#xpack.security.http.ssl.enabled: true
+#xpack.security.http.ssl.key: /usr/share/elasticsearch/config/server.key
+#xpack.security.http.ssl.certificate: /usr/share/elasticsearch/config/server.crt
+#xpack.security.http.ssl.certificate_authorities: /usr/share/elasticsearch/config/server.crt
