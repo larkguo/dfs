@@ -1,26 +1,26 @@
-[root@localhost dfs]# ll
-total 8
-drwxr-xr-x 2 root root  101 Apr  6 22:18 debug
--rw-r--r-- 1 root root 2380 Apr  6 22:18 dfs.sh
-drwxr-xr-x 3 root root   58 Apr  6 22:18 es
--rw-r--r-- 1 root root  252 Apr  6 22:18 readme.txt
-drwxr-xr-x 6 root root   78 Apr  6 22:18 src
+[root@localhost dfs]# ls
+dfs.sh  doc  es  readme.txt  src  test
 [root@localhost dfs]# sh dfs.sh 
 start elasticsearch...
-Loaded image: elasticsearch:latest
+6.7.2: Pulling from library/elasticsearch
+Digest: sha256:7003e76b007510d54daf1f4fec1d032fca2b12bd2f9a7b1d12a2e99220590996
+Status: Image is up to date for elasticsearch:6.7.2
 es
 es
-58fee9ab1e38708dccb2046c8a64bc74484d7719db6c4f8d1337768ce5dea042
-CONTAINER ID        IMAGE               COMMAND                  CREATED                  STATUS                  PORTS               NAMES
-58fee9ab1e38        elasticsearch       "/elastic-entrypoint¡­"   Less than a second ago   Up Less than a second                       es
+d8f6437735a6e35afd53713b128e31c11ff8d30e3d2473510929fc4b6c4e0dc8
+CONTAINER ID        IMAGE                 COMMAND                  CREATED                  STATUS                  PORTS               NAMES
+d8f6437735a6        elasticsearch:6.7.2   "/usr/local/bin/dockâ€¦"   Less than a second ago   Up Less than a second                       es
 start dfs...
-go: creating new go.mod: module dfs
+go mod init: go.mod already exists
 listen:[ :80 ] backends:[ http://localhost:2020,http://127.0.0.1:2021 ]
 AddBackend: http://localhost:2020 1
 Server: http://127.0.0.1:2021  Path: ./http_127.0.0.1_2021
 Server: http://localhost:2020  Path: ./http_localhost_2020
-{"error":{"root_cause":[{"type":"index_not_found_exception","reason":"no such index","resource.type":"index_or_alias","resource.id":"backends","index_uuid":"_na_","index":"backends"}],"type":"index_not_found_exception","reason":"no such index","resource.type":"index_or_alias","resource.id":"backends","index_uuid":"_na_","index":"backends"},"status":404}{"_index":"backends","_type":"_doc","_id":"http_localhost:2020","_version":2,"result":"updated","_shards":{"total":2,"successful":1,"failed":0},"_seq_no":1,"_primary_term":1}AddBackend: http://127.0.0.1:2021 1
-{"_index":"backends","_type":"_doc","_id":"http_127.0.0.1:2021","_version":1,"result":"created","_shards":{"total":2,"successful":1,"failed":0},"_seq_no":2,"_primary_term":1}{"error":{"root_cause":[{"type":"index_not_found_exception","reason":"no such index","resource.type":"index_or_alias","resource.id":"objects","index_uuid":"_na_","index":"objects"}],"type":"index_not_found_exception","reason":"no such index","resource.type":"index_or_alias","resource.id":"objects","index_uuid":"_na_","index":"objects"},"status":404}* About to connect() to localhost port 80 (#0)
+tcp        0      0 127.0.0.1:2020          0.0.0.0:*               LISTEN      6630/./dfs          
+tcp        0      0 127.0.0.1:2021          0.0.0.0:*               LISTEN      6630/./dfs          
+tcp6       0      0 ::1:40336               ::1:9200                ESTABLISHED 6630/./dfs          
+AddBackend: http://127.0.0.1:2021 1
+{"acknowledged":true}{"_index":"backends","_type":"_doc","_id":"http_localhost:2020","_version":1,"result":"created","_shards":{"total":2,"successful":1,"failed":0},"_seq_no":0,"_primary_term":1}{"_index":"backends","_type":"_doc","_id":"http_127.0.0.1:2021","_version":1,"result":"created","_shards":{"total":2,"successful":1,"failed":0},"_seq_no":1,"_primary_term":1}{"acknowledged":true}* About to connect() to localhost port 80 (#0)
 *   Trying ::1...
 * Connected to localhost (::1) port 80 (#0)
 > PUT /objects/test1 HTTP/1.1
@@ -35,7 +35,7 @@ Server: http://localhost:2020  Path: ./http_localhost_2020
 backend: http localhost:2020
 fullname: ./http_localhost_2020/objects/test1
 < HTTP/1.1 200 OK
-< Date: Mon, 06 Apr 2020 14:19:41 GMT
+< Date: Tue, 07 Apr 2020 00:15:37 GMT
 < Content-Length: 0
 < 
 * Connection #0 to host localhost left intact
@@ -50,7 +50,7 @@ fullname: ./http_localhost_2020/objects/test1
 backend: http localhost:2020
 ObjectGet: ./http_localhost_2020/objects/test1
 < HTTP/1.1 200 OK
-< Date: Mon, 06 Apr 2020 14:19:42 GMT
+< Date: Tue, 07 Apr 2020 00:15:38 GMT
 < Content-Length: 14
 < Content-Type: text/plain; charset=utf-8
 < 
@@ -70,7 +70,7 @@ ObjectGet: ./http_localhost_2020/objects/test1
 backend: http 127.0.0.1:2021
 fullname: ./http_127.0.0.1_2021/objects/test2
 < HTTP/1.1 200 OK
-< Date: Mon, 06 Apr 2020 14:19:42 GMT
+< Date: Tue, 07 Apr 2020 00:15:38 GMT
 < Content-Length: 0
 < 
 * Connection #0 to host localhost left intact
@@ -85,32 +85,13 @@ fullname: ./http_127.0.0.1_2021/objects/test2
 backend: http 127.0.0.1:2021
 ObjectGet: ./http_127.0.0.1_2021/objects/test2
 < HTTP/1.1 200 OK
-< Date: Mon, 06 Apr 2020 14:19:43 GMT
+< Date: Tue, 07 Apr 2020 00:15:39 GMT
 < Content-Length: 14
 < Content-Type: text/plain; charset=utf-8
 < 
 * Connection #0 to host localhost left intact
-/objects/test1[root@localhost dfs]# 
-[root@localhost dfs]# 
-[root@localhost dfs]# netstat -antup|grep dfs
-tcp        0      0 127.0.0.1:2020          0.0.0.0:*               LISTEN      18908/./dfs         
-tcp        0      0 127.0.0.1:2021          0.0.0.0:*               LISTEN      18908/./dfs         
-tcp6       0      0 :::80                   :::*                    LISTEN      18908/./dfs         
-[root@localhost dfs]# ls
-debug  dfs.sh  es  readme.txt  src
-[root@localhost dfs]# ls src
-db  dfs  go.mod  http_127.0.0.1_2021  http_localhost_2020  loadbalancer  main.go  proxy  server
-[root@localhost dfs]# ll src/http_127.0.0.1_2021/objects/
-total 4
--rw-r--r-- 1 root root 14 Apr  6 22:19 test2
-[root@localhost dfs]# ll src/http_localhost_2020/objects/
-total 4
--rw-r--r-- 1 root root 14 Apr  6 22:19 test1
-[root@localhost dfs]# 
-[root@localhost dfs]# 
-[root@localhost dfs]# curl http://localhost:9200/backends/_search?pretty
-{
-  "took" : 5,
+/objects/test1{
+  "took" : 6,
   "timed_out" : false,
   "_shards" : {
     "total" : 5,
@@ -128,7 +109,6 @@ total 4
         "_id" : "http_localhost:2020",
         "_score" : 1.0,
         "_source" : {
-          "@timestamp" : "2020-04-06T14:23:38.881Z",
           "backend" : "http://localhost:2020",
           "alive" : 1,
           "policy" : 0,
@@ -144,7 +124,6 @@ total 4
         "_id" : "http_127.0.0.1:2021",
         "_score" : 1.0,
         "_source" : {
-          "@timestamp" : "2020-04-06T14:23:38.892Z",
           "backend" : "http://127.0.0.1:2021",
           "alive" : 1,
           "policy" : 0,
@@ -157,9 +136,8 @@ total 4
     ]
   }
 }
-[root@localhost dfs]# curl http://localhost:9200/objects/_search?pretty
 {
-  "took" : 1,
+  "took" : 3,
   "timed_out" : false,
   "_shards" : {
     "total" : 5,
@@ -174,10 +152,10 @@ total 4
       {
         "_index" : "objects",
         "_type" : "_doc",
-        "_id" : "w3DcT3EBW_rUo6_UeW-Y",
+        "_id" : "QSj-UXEBf_QEHZWVEsLS",
         "_score" : 1.0,
         "_source" : {
-          "@timestamp" : "2020-04-06T14:19:41.127Z",
+          "@timestamp" : "2020-04-07T00:15:37.507Z",
           "name" : "/objects/test1",
           "backend" : "http://localhost:2020",
           "size" : 14,
@@ -187,10 +165,10 @@ total 4
       {
         "_index" : "objects",
         "_type" : "_doc",
-        "_id" : "xHDcT3EBW_rUo6_Uf28J",
+        "_id" : "Qij-UXEBf_QEHZWVF8KD",
         "_score" : 1.0,
         "_source" : {
-          "@timestamp" : "2020-04-06T14:19:42.727Z",
+          "@timestamp" : "2020-04-07T00:15:38.881Z",
           "name" : "/objects/test2",
           "backend" : "http://127.0.0.1:2021",
           "size" : 14,
@@ -200,4 +178,34 @@ total 4
     ]
   }
 }
+[root@localhost dfs]# netstat -antup|grep dfs
+tcp        0      0 127.0.0.1:2020          0.0.0.0:*               LISTEN      6630/./dfs          
+tcp        0      0 127.0.0.1:2021          0.0.0.0:*               LISTEN      6630/./dfs          
+tcp        0      0 127.0.0.1:2020          127.0.0.1:48412         ESTABLISHED 6630/./dfs          
+tcp        0      0 127.0.0.1:2021          127.0.0.1:44062         ESTABLISHED 6630/./dfs          
+tcp        0      0 127.0.0.1:48412         127.0.0.1:2020          ESTABLISHED 6630/./dfs          
+tcp        0      0 127.0.0.1:44062         127.0.0.1:2021          ESTABLISHED 6630/./dfs          
+tcp6       0      0 :::80                   :::*                    LISTEN      6630/./dfs          
+tcp6       0      0 ::1:40366               ::1:9200                ESTABLISHED 6630/./dfs          
+[root@localhost dfs]# docker ps
+CONTAINER ID        IMAGE                 COMMAND                  CREATED             STATUS              PORTS               NAMES
+d8f6437735a6        elasticsearch:6.7.2   "/usr/local/bin/dockâ€¦"   53 seconds ago      Up 52 seconds                           es
+[root@localhost dfs]# ll src
+total 7844
+drwxr-xr-x 2 root root      19 Apr  7 07:57 db
+-rwxr-xr-x 1 root root 8017883 Apr  7 08:15 dfs
+-rw-r--r-- 1 root root      20 Apr  7 08:13 go.mod
+drwxr-xr-x 3 root root      21 Apr  7 08:15 http_127.0.0.1_2021
+drwxr-xr-x 3 root root      21 Apr  7 08:15 http_localhost_2020
+drwxr-xr-x 2 root root      34 Apr  7 07:57 loadbalancer
+-rw-r--r-- 1 root root     851 Apr  7 08:13 main.go
+drwxr-xr-x 2 root root      70 Apr  7 07:57 proxy
+drwxr-xr-x 2 root root      23 Apr  7 07:57 server
+-rw-r--r-- 1 root root     217 Apr  7 08:13 src.sh
+[root@localhost dfs]# ll src/http_localhost_2020/objects/
+total 4
+-rw-r--r-- 1 root root 14 Apr  7 08:15 test1
+[root@localhost dfs]# ll src/http_127.0.0.1_2021/objects/
+total 4
+-rw-r--r-- 1 root root 14 Apr  7 08:15 test2
 [root@localhost dfs]# 

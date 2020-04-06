@@ -16,7 +16,7 @@ type DbClient struct { // inherit  Handler.ServeHTTP
 }
 
 var g_HttpClient *http.Client = createHTTPClient()
-var g_DbURL string = "http://192.168.73.11:9200"
+var g_DbURL string = "http://localhost:9200"
 
 type ObjectItem struct {
 	Timestamp string `json:"@timestamp"`
@@ -104,7 +104,7 @@ func hashFromHeaderGet(h http.Header) string {
 
 // ================================= object =================================
 /*
-curl -XPUT -v http://192.168.73.1/objects/test1  -d"bucket1/object1" -H 'Digest: sha-256=35bfdc4784a46633f931e31644383d85ba88b43d25113cc262220bb727d89be1'
+curl -XPUT -v http://localhost/objects/test1  -d"bucket1/object1" -H 'Digest: sha-256=35bfdc4784a46633f931e31644383d85ba88b43d25113cc262220bb727d89be1'
 */
 func dbPutObject(w http.ResponseWriter, r *http.Request) {
 
