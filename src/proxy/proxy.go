@@ -13,28 +13,6 @@ type HttpProxy struct { // inherit  Handler.ServeHTTP
 }
 
 func (p *HttpProxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-
-	/*
-		// http cancel,complete等事件侦听
-			ctx := r.Context()
-			if cn, ok := w.(http.CloseNotifier); ok {
-				var cancel context.CancelFunc
-				ctx, cancel = context.WithCancel(ctx)
-				defer cancel()
-				notifyChan := cn.CloseNotify()
-				go func() {
-					select {
-					case <-notifyChan:
-						fmt.Println("CloseNotifier")
-						cancel()
-					case <-ctx.Done():
-						fmt.Println("ContextDone!")
-					}
-				}()
-			}
-			fmt.Println(r.Method, r.URL.Path)
-	*/
-
 	// 1.build proxyRequest
 	// http请求Header转发
 	proxyReq := new(http.Request)
@@ -71,7 +49,7 @@ func (p *HttpProxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// http响应Body转发
 	io.Copy(w, resp.Body) // stream copy
 
-	// 4.调用下一个Handler.ServeHTTP处理
+	// 4.调用下一个Handler.ServeHTTP处理: Metadata元数据更新
 	if resp.StatusCode == http.StatusOK {
 		switch r.Method {
 		case http.MethodPut, http.MethodPost, http.MethodDelete, http.MethodHead:

@@ -80,7 +80,7 @@ func lbPutObject(w http.ResponseWriter, r *http.Request) {
 			r.URL.Host = backend.Host
 			fmt.Println("backend:", backend.Scheme, backend.Host)
 
-			// 调用下一个Handler.ServeHTTP处理
+			// 调用下一个Handler.ServeHTTP处理: proxy代理
 			p := &proxy.HttpProxy{}
 			p.ServeHTTP(w, r)
 			return
@@ -100,7 +100,7 @@ func lbGetObject(w http.ResponseWriter, r *http.Request) {
 			r.URL.Host = backend.Host
 			fmt.Println("backend:", backend.Scheme, backend.Host)
 
-			// next-processor
+			// 调用下一个Handler.ServeHTTP处理: proxy代理
 			p := &proxy.HttpProxy{}
 			p.ServeHTTP(w, r)
 			return
@@ -119,14 +119,14 @@ func lbDeleteObject(w http.ResponseWriter, r *http.Request) {
 		r.URL.Host = url.Host
 		fmt.Println("backend:", url.Scheme, url.Host)
 
-		// next-processor
+		// 调用下一个Handler.ServeHTTP处理: proxy代理
 		p := &proxy.HttpProxy{}
 		p.ServeHTTP(w, r)
 	}
 }
 
 func lbGetObjectInfo(w http.ResponseWriter, r *http.Request) {
-	// next-processor
+	// 调用下一个Handler.ServeHTTP处理: Metadata元数据获取
 	dbclient := &db.DbClient{}
 	dbclient.ServeHTTP(w, r)
 }

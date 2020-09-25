@@ -1,6 +1,17 @@
 
 DFS is the simplest distributed file system written in golang.
 
+[FlowChart]
+1.write:
+Loadbalancer -> Data proxy 	-> Data backend server 
+							-> Metadata
+
+2.read:
+Loadbalancer -> Data proxy 	-> Data backend server 
+
+3.info:
+Loadbalancer -> Data proxy 	-> Metadata
+
 [Require]
 go 1.12 or above
 elasticsearch 6.7 or above
