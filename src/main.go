@@ -35,4 +35,6 @@ func main() {
 
 	// start loadbalancer & proxy
 	lb.Start(listenAddr, backendsAddr)
+
+	fmt.Println("dfs exit!")
 }

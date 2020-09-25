@@ -46,5 +46,5 @@ curl -XGET  -v http://localhost$OBJECT2
 # curl -XDELETE -v http://localhost$OBJECT2
 
 # 4. check
-curl http://localhost:9200/backends/_search?pretty
-curl http://localhost:9200/objects/_search?pretty
+curl -XGET http://localhost:9200/backends/_search?pretty
+curl -XGET http://localhost:9200/objects/_search?pretty

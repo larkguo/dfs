@@ -133,12 +133,12 @@ func dbPutObject(w http.ResponseWriter, r *http.Request) {
 	defer resp.Body.Close()
 	io.Copy(ioutil.Discard, resp.Body)
 
-	// Statistics
+	// Statistics 按容量更新权重
 	UpdateBackendStatistics(r.URL.Scheme, r.URL.Host, size, 1)
 }
 
 /*
-curl -X POST "localhost:9200/objects/_doc/_delete_by_query" -H 'Content-Type: application/json' -d'{
+curl -XPOST "localhost:9200/objects/_doc/_delete_by_query" -H 'Content-Type: application/json' -d'{
   "query": {"match_phrase": {"name": "/objects/test1"}}
 }'
 */
@@ -349,7 +349,7 @@ func UpdateBackendStatistics(scheme, host string, size, proxy uint64) (e error) 
 }
 
 /*
-curl http://localhost:9200/backends/_search?pretty -H 'Content-Type: application/json' -d '{
+curl -XGET http://localhost:9200/backends/_search?pretty -H 'Content-Type: application/json' -d '{
 	"size": 1,"sort": [{"magic": "asc"}],"query": {"bool": {"must": [ {"match": {"alive": 1}}]}}
 }'
 */
@@ -396,7 +396,7 @@ func GetNextBackend() (backend string) {
 }
 
 /*
-curl http://localhost:9200/backends/_search?pretty -H 'Content-Type: application/json' -d '{
+curl -XGET http://localhost:9200/backends/_search?pretty -H 'Content-Type: application/json' -d '{
 	"from": 0,"size": 255,"sort": [{"@timestamp": "desc"}]
 }'
 */
