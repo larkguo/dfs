@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-type DbClient struct { // inherit  Handler.ServeHTTP
+type DbClient struct { // inherit Handler.ServeHTTP
 }
 
 var g_HttpClient *http.Client = createHTTPClient()
@@ -197,7 +197,6 @@ func DbGetObjectInfo(w http.ResponseWriter, r *http.Request) {
 	}
 	request.Header.Set("Content-Type", "application/json")
 	resp, e := g_HttpClient.Do(request)
-	//resp, e := http.DefaultTransport.RoundTrip(request)
 	if e != nil {
 		fmt.Println(e.Error())
 		return

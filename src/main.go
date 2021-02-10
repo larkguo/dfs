@@ -30,10 +30,10 @@ func main() {
 	}
 	fmt.Println("listen:[", listenAddr, "] backends:[", backendsAddr, "]")
 
-	// start backends server
+	// start BackendServer
 	go server.Start(backendsAddr)
 
-	// start loadbalancer & proxy
+	// start Loadbalancer
 	lb.Start(listenAddr, backendsAddr)
 
 	fmt.Println("dfs exit!")

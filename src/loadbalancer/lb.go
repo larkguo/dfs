@@ -2,15 +2,21 @@ package loadbalancer
 
 import (
 	db "dfs/db"
-	proxy "dfs/proxy"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"net/url"
 	"strings"
+	"sync"
 	"time"
 )
 
+type ObjectItemResp struct {
+	Name    string `json:"name"`
+	Backend string `json:"backend"`
+	Hash    string `json:"hash"`
+}
 type Backend struct {
 	URL   *url.URL
 	Alive uint
@@ -19,10 +25,14 @@ type LoadBalancer struct { // inherit  Handler.ServeHTTP
 	backends []*Backend
 }
 
-var g_loadBalancer LoadBalancer
+var instance *LoadBalancer
+var once sync.Once
 
-func init() {
-	go healthCheck()
+func NewSingleton() *LoadBalancer {
+	once.Do(func() {
+		instance = &LoadBalancer{}
+	})
+	return instance
 }
 
 func (b *Backend) SetAlive(alive uint) {
@@ -35,23 +45,33 @@ func (b *Backend) IsAlive() (alive uint) {
 	return
 }
 
+func isBackendAlive(u *url.URL) uint {
+	timeout := time.Second
+	conn, err := net.DialTimeout("tcp", u.Host, timeout)
+	if err != nil {
+		fmt.Println("Site unreachable, error: ", err)
+		return 0
+	}
+	_ = conn.Close()
+	return 1
+}
+
 func (l *LoadBalancer) AddBackend(backend *Backend) {
 	l.backends = append(l.backends, backend)
 	fmt.Println("AddBackend:", backend.URL, backend.Alive)
 }
 
 func (l *LoadBalancer) HealthCheck() {
-	for _, b := range l.backends {
-		alive := isBackendAlive(b.URL)
-		b.SetAlive(alive)
+	t := time.NewTicker(30 * time.Second)
+	for {
+		select {
+		case <-t.C:
+			for _, b := range l.backends {
+				alive := isBackendAlive(b.URL)
+				b.SetAlive(alive)
+			}
+		}
 	}
-}
-
-type ObjectItemResp struct {
-	Name    string `json:"name"`
-	Backend string `json:"backend"`
-	//Size      uint64 `json:"size"`
-	Hash string `json:"hash"`
 }
 
 func (l *LoadBalancer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -69,20 +89,36 @@ func (l *LoadBalancer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func lbPutObject(w http.ResponseWriter, r *http.Request) {
-	// 根据策略(magic最小)获取下一个后端处理的地址
-	backendStr := db.GetNextBackend()
+	backendStr := db.GetNextBackend() // BackendServer(smallest magic)
 	if backendStr != "" {
 		backend, err := url.Parse(backendStr)
 		if err == nil {
-
-			// 设置后续Handler.ServeHTTP处理的URL
+			// -> BackendServer
 			r.URL.Scheme = backend.Scheme
 			r.URL.Host = backend.Host
 			fmt.Println("backend:", backend.Scheme, backend.Host)
+			resp, err := http.DefaultTransport.RoundTrip(r)
+			if err != nil {
+				fmt.Println("RoundTrip:", err)
+				http.Error(w, err.Error(), http.StatusServiceUnavailable)
+				return
+			}
+			defer resp.Body.Close()
 
-			// 调用下一个Handler.ServeHTTP处理: proxy代理
-			p := &proxy.HttpProxy{}
-			p.ServeHTTP(w, r)
+			// -> Client
+			w.WriteHeader(resp.StatusCode)
+			for key, value := range resp.Header {
+				for _, v := range value {
+					w.Header().Add(key, v)
+				}
+			}
+			io.Copy(w, resp.Body) // stream copy
+
+			// -> MetadataDB
+			if resp.StatusCode == http.StatusOK {
+				dbclient := &db.DbClient{}
+				dbclient.ServeHTTP(w, r)
+			}
 			return
 		}
 	}
@@ -90,19 +126,31 @@ func lbPutObject(w http.ResponseWriter, r *http.Request) {
 }
 
 func lbGetObject(w http.ResponseWriter, r *http.Request) {
-	// find backend
 	backendStr := db.GetBackendByObject(r)
 	if backendStr != "" {
 		backend, err := url.Parse(backendStr)
 		if err == nil {
-			// set backend url
+			//  -> BackendServer
 			r.URL.Scheme = backend.Scheme
 			r.URL.Host = backend.Host
 			fmt.Println("backend:", backend.Scheme, backend.Host)
+			resp, err := http.DefaultTransport.RoundTrip(r)
+			if err != nil {
+				fmt.Println("RoundTrip:", err)
+				http.Error(w, err.Error(), http.StatusServiceUnavailable)
+				return
+			}
+			defer resp.Body.Close()
 
-			// 调用下一个Handler.ServeHTTP处理: proxy代理
-			p := &proxy.HttpProxy{}
-			p.ServeHTTP(w, r)
+			// -> Client
+			w.WriteHeader(resp.StatusCode)
+			for key, value := range resp.Header {
+				for _, v := range value {
+					w.Header().Add(key, v)
+				}
+			}
+			io.Copy(w, resp.Body) // stream copy
+
 			return
 		}
 	}
@@ -110,75 +158,75 @@ func lbGetObject(w http.ResponseWriter, r *http.Request) {
 }
 
 func lbDeleteObject(w http.ResponseWriter, r *http.Request) {
-	// find backend
 	backendStr := db.GetBackendByObject(r)
 	url, err := url.Parse(backendStr)
 	if err == nil {
-		// set backend url
+		// -> BackendServer
 		r.URL.Scheme = url.Scheme
 		r.URL.Host = url.Host
 		fmt.Println("backend:", url.Scheme, url.Host)
+		resp, err := http.DefaultTransport.RoundTrip(r)
+		if err != nil {
+			fmt.Println("RoundTrip:", err)
+			http.Error(w, err.Error(), http.StatusServiceUnavailable)
+			return
+		}
+		defer resp.Body.Close()
 
-		// 调用下一个Handler.ServeHTTP处理: proxy代理
-		p := &proxy.HttpProxy{}
-		p.ServeHTTP(w, r)
+		// ->Client
+		w.WriteHeader(resp.StatusCode)
+		for key, value := range resp.Header {
+			for _, v := range value {
+				w.Header().Add(key, v)
+			}
+		}
+		io.Copy(w, resp.Body) // stream copy
+
+		// -> MetadataDB
+		if resp.StatusCode == http.StatusOK {
+			dbclient := &db.DbClient{}
+			dbclient.ServeHTTP(w, r)
+		}
 	}
 }
 
 func lbGetObjectInfo(w http.ResponseWriter, r *http.Request) {
-	// 调用下一个Handler.ServeHTTP处理: Metadata元数据获取
+	// MetadataDB
 	dbclient := &db.DbClient{}
 	dbclient.ServeHTTP(w, r)
-}
-
-func isBackendAlive(u *url.URL) uint {
-	timeout := time.Second
-	conn, err := net.DialTimeout("tcp", u.Host, timeout)
-	if err != nil {
-		fmt.Println("Site unreachable, error: ", err)
-		return 0
-	}
-	_ = conn.Close()
-	return 1
-}
-
-func healthCheck() {
-	t := time.NewTicker(time.Minute)
-	for {
-		select {
-		case <-t.C:
-			g_loadBalancer.HealthCheck()
-		}
-	}
 }
 
 func Start(listenAddr, backendsAddr string) {
 	var count int
 
-	// backends from command
+	instance := NewSingleton()
+
+	// BackendServer
 	if backendsAddr != "" {
 		backends := strings.Split(backendsAddr, ",")
 		for _, v := range backends {
 			url, err := url.Parse(v)
 			if err == nil {
 				count += 1
-				g_loadBalancer.AddBackend(&Backend{URL: url, Alive: 1})
+				instance.AddBackend(&Backend{URL: url, Alive: 1})
 				db.AddBackend(url.Scheme, url.Host, 1, 0, 0, 0, 0, 1)
 			}
 		}
 	}
 
-	// backends from db
+	// BackendServer from MetadataDB
 	if count == 0 {
 		fmt.Println("Get backends from db...")
 		backendItems := db.GetAllBackends()
 		for _, v := range backendItems {
 			url, err := url.Parse(v.Backend)
 			if err == nil {
-				g_loadBalancer.AddBackend(&Backend{URL: url, Alive: v.Alive})
+				instance.AddBackend(&Backend{URL: url, Alive: v.Alive})
 			}
 		}
 	}
+
+	go instance.HealthCheck()
 
 	l := &http.Server{
 		Addr:    listenAddr,
